@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEO INDIA 2077</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #050817;
+    font-family: Arial;
+    color: white;
+}
+
+#title {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    color: cyan;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+#controls {
+    position: fixed;
+    bottom: 25px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+button {
+    padding: 18px;
+    border-radius: 12px;
+    border: 2px solid cyan;
+    background: #10243b;
+    color: white;
+    font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="title">NEO INDIA 2077</div>
+
+<div id="controls">
+    <button onclick="move(-1)">⬅️</button>
+    <button onclick="jump()">JUMP</button>
+    <button onclick="move(1)">➡️</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050817);
+
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x223355, 2));
+
+const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(200, 200),
+    new THREE.MeshStandardMaterial({ color: 0x172238 })
+);
+
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -1;
+scene.add(ground);
+
+// Cyber Ninja
+const ninja = new THREE.Group();
+
+const body = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 2, 0.6),
+    new THREE.MeshStandardMaterial({ color: 0x151a2e })
+);
+ninja.add(body);
+
+const visor = new THREE.Mesh(
+    new THREE.BoxGeometry(0.65, 0.15, 0.65),
+    new THREE.MeshBasicMaterial({ color: 0x00ffff })
+);
+visor.position.set(0, 0.45, 0.32);
+ninja.add(visor);
+
+scene.add(ninja);
+
+// Neon city buildings
+for (let i = 0; i < 40; i++) {
+    const building = new THREE.Mesh(
+        new THREE.BoxGeometry(
+            3 + Math.random() * 3,
+            4 + Math.random() * 12,
+            3 + Math.random() * 3
+        ),
+        new THREE.MeshStandardMaterial({
+            color: Math.random() > 0.5 ? 0x172d4c : 0x281b43,
+            emissive: 0x07152a
+        })
+    );
+
+    building.position.set(
+        (Math.random() - 0.5) * 70,
+        2 + Math.random() * 6,
+        -10 - Math.random() * 60
+    );
+
+    scene.add(building);
+}
+
+camera.position.set(0, 3, 8);
+camera.lookAt(ninja.position);
+
+let jumpHeight = 0;
+let jumping = false;
+
+function move(direction) {
+    ninja.position.x += direction;
+}
+
+function jump() {
+    if (!jumping) {
+        jumping = true;
+        jumpHeight = 0.3;
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    if (jumping) {
+        ninja.position.y += jumpHeight;
+        jumpHeight -= 0.02;
+
+        if (ninja.position.y <= 0) {
+            ninja.position.y = 0;
+            jumping = false;
+        }
+    }
+
+    camera.position.x +=
+        (ninja.position.x - camera.position.x) * 0.05;
+
+    camera.lookAt(ninja.position.x, 0, 0);
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>
